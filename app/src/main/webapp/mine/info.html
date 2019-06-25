@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>设置个人资料</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" href="/js/plugins/bootstrap-4.1.1-dist/css/bootstrap.min.css">
+		<script src="/js/plugins/jquery/jquery.min.js"></script>
+		<script src="/js/plugins/bootstrap-4.1.1-dist/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="/css/font/css/font-awesome.min.css" />
+		<link rel="stylesheet" href="/css/reset.css" />
+		<link rel="stylesheet" href="/css/myInfo.css" />
+		<script src="/js/plugins/jrender/jrender.min.js"></script>
+		<link rel="stylesheet" href="/js/plugins/dialog2/css/dialog.css" />
+		<script src="/js/plugins/dialog2/js/dialog.min.js"></script>
+		<script src="/js/plugins/jquery-form/jquery.form.js"></script>
+
+		<script>
+			$(function () {
+				//获取sessionStorage中的user
+				var user = JSON.parse(sessionStorage.getItem("user"));
+				$(".info").renderValues(user);
+
+				//设置div的背景图片
+				$(".myBg").css("background-image", "url(" + user.coverImgUrl + ")")
+
+				var flag = true;
+
+				//上传头像
+				$("#headBtn").click(function () {
+					$("#headImgFile").click();
+					flag = true;
+				})
+
+				//上传背景
+				$("#coverBtn").click(function () {
+					$("#headImgFile").click();
+					flag = false;
+				})
+
+				//在上传控件改变时提交form表单，到ImageController中将文件上传
+				$("#headImgFile").change(function () {
+					$("#uploadForm").ajaxSubmit(function (data) {
+						if (data.status == 1) {
+							console.log(data);
+							//这里需要对是上传头像还是背景做分别
+							if (flag) {
+								$("#headImgUrl").val(data.url);
+								//更新image的url
+								$("#headImg").attr("src", data.url)
+							} else {
+								$("#coverImgUrl").val(data.url);
+								//更新Div的myBg背景图
+								$(".myBg").css("background-image", "url(" + data.url + ")");
+							}
+						} else {
+							//状态值不为1，报错
+							$(document).dialog({
+							});
+						}
+
+					})
+				})
+
+				//设置表单的action属性，因为id是不确定的，所以要通过sessionStorage中获取
+				$("#infoForm").attr("action", "/users/" + user.id);
+
+				//点击提交
+				$("#saveBtn").click(function () {
+					$("#infoForm").ajaxSubmit(function (data) {
+						if (data.success) {
+							//刷新session缓存的user对象
+							sessionStorage.setItem("user", JSON.stringify(data.object));
+							//跳转到主页中
+							window.location.href = "/mine/profiles.html"
+						}
+					})
+				})
+
+				})
+
+				//修改个人信息的ajax方法
+				// $("#saveBtn").click(function () {
+				// 	$.ajax({
+				// 		url: "/users/" + user.id,
+				// 		type: "PATCH",
+				// 		data:$("infoForm").serialize(),
+				// 		success:function (data) {
+				// 			if (data.success) {
+				// 				sessionStorage.setItem("user", JSON.stringify(data.data));
+				// 				window.location.href = "/mine/profiles.html?id=" + data.data.id;
+				// 			} else {
+				// 				$.alert(data.msg);
+				// 			}
+				// 		}
+				// 	});
+				// })
+		</script>
+
+	</head>
+
+	<body>
+		<!-- 以二进制格式传图片数据-->
+		<form action="/images" method="post" enctype="multipart/form-data" id="uploadForm">
+			<input id="headImgFile" type="file" name="file" style="display: none">
+		</form>
+
+
+		<div class="search-head">
+			<div class="row nav-search">
+				<div class="col">
+					<a href="javascript:window.history.go(-1);">
+						<span>取消</span>
+					</a>
+				</div>
+				<div class="col">
+					<span>设置个人资料</span>
+				</div>
+				<div class="col" >
+					<a href="#" id="saveBtn" >
+						<span>保存</span>
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<div class="container info">
+			<div class="myBg">
+				<img id="headImg"  class="rounded-circle" render-src="headImgUrl"/>
+				<div class="editHead" id="headBtn" ><i class="fa fa-pencil-square fa-lg " aria-hidden="true"></i></div>
+				<button  class="btn btn-outline-light ibtn " id="coverBtn">设置背景</button>
+			</div>
+
+			<!--此处的form只有get和post两种http方法，不符合RESTful的设计思想-->
+			<form id="infoForm" method="post" >
+
+					<!--用HiddenHttpMethodFilter修改表单的请求方式,其name必须为"_method"!!-->
+					<input name="_method" value="put" type="hidden">
+
+
+					<!--隐藏域，用来存页面没有显示的数据-->
+					<input type="hidden" name="headImgUrl" id="headImgUrl" render-value="headImgUrl">
+					<input type="hidden" name="coverImgUrl" id="coverImgUrl" render-value="coverImgUrl">
+					<label>昵称</label><input type="text" name="nickName" class="form-control" render-value="nickName"><br/>
+					<label>性别</label><select class="form-control" name="gender" render-value="gender">
+							<option value="-1">保密</option>
+							<option value="1">男</option>
+							<option value="0">女</option>
+						</select><br />
+					<label>地区</label><input type="text" name="place"  class="form-control" render-value="place"><br/>
+					<label>签名</label><textarea name="sign" class="form-control" rows="5" render-value="sign"></textarea>
+			</form>
+		</div>
+		
+		
+		
+	</body>
+</html>

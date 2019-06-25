@@ -1,0 +1,7 @@
+cn\wolfcode\trip\base\mapper\UserMapper.class
+cn\wolfcode\trip\base\service\IUserService.class
+cn\wolfcode\trip\base\service\impl\UserServiceImpl.class
+cn\wolfcode\trip\base\domain\Region.class
+cn\wolfcode\trip\base\query\QueryObject.class
+cn\wolfcode\trip\base\domain\User.class
+cn\wolfcode\trip\base\mapper\RegionMapper.class
